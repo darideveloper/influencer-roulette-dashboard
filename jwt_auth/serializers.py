@@ -49,9 +49,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             
         # Return error if there is an active user with the same email
         if is_error:
-            raise serializers.ValidationError(
-                {"email": "duplicated_email"}
-            )
+            raise serializers.ValidationError("duplicated_email")
         return value
 
     def save(self):
