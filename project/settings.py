@@ -315,15 +315,18 @@ JAZZMIN_UI_TWEAKS = {
     },
 }
 
-# Cors
+# Cors & CSRF
 if os.getenv("CORS_ALLOWED_ORIGINS") != "None":
     CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS").split(",")
-
-# Allow credentials for HttpOnly cookies
-CORS_ALLOW_CREDENTIALS = True
+else:
+    # Allow all origins for development
+    CORS_ALLOW_ALL_ORIGINS = True
 
 if os.getenv("CSRF_TRUSTED_ORIGINS") != "None":
     CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS").split(",")
+
+# Allow credentials for HttpOnly cookies
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Storage settings
