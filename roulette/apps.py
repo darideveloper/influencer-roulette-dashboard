@@ -1,0 +1,7 @@
+from django.apps import AppConfig
+
+
+class RouletteConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'roulette'
+    verbose_name = 'Rouleta'
