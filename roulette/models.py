@@ -7,6 +7,7 @@ class Client(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=255)
     address = models.TextField()
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
