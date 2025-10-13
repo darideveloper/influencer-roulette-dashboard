@@ -1,7 +1,6 @@
 import os
 import sys
 from pathlib import Path
-from datetime import timedelta
 
 from dotenv import load_dotenv
 
@@ -20,8 +19,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 LANGUAGE_CODE = os.getenv("LANGUAGE_CODE")
 TIME_ZONE = os.getenv("TIME_ZONE")
-ACCESS_TOKEN_LIFETIME = float(os.getenv("ACCESS_TOKEN_LIFETIME_MINUTES"))
-REFRESH_TOKEN_LIFETIME = float(os.getenv("REFRESH_TOKEN_LIFETIME_HOURS"))
 AWS_STORAGE = os.environ.get("AWS_STORAGE") == "True"
 HOST = os.getenv("HOST")
 TEST_HEADLESS = os.getenv("TEST_HEADLESS", "False") == "True"
@@ -35,7 +32,6 @@ EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL")
-CUSTOM_TOKENS_LIFETIME_HOURS = float(os.getenv("CUSTOM_TOKENS_LIFETIME_HOURS"))
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 print(f"DEBUG: {DEBUG}")
@@ -52,13 +48,10 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 INSTALLED_APPS = [
     # Local apps
     "core",
-    "jwt_auth",
-    "users",
     # Installed apps
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
-    "rest_framework_simplejwt",
     "jazzmin",
     # Django apps
     "django.contrib.admin",
@@ -375,27 +368,9 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": REST_FRAMEWORK_PAGE_SIZE,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
-        # "rest_framework.authentication.SessionAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
     "EXCEPTION_HANDLER": "utils.handlers.custom_exception_handler",
-}
-
-# Setup simple jwt
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=ACCESS_TOKEN_LIFETIME),
-    "REFRESH_TOKEN_LIFETIME": timedelta(hours=REFRESH_TOKEN_LIFETIME),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "UPDATE_LAST_LOGIN": True,
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-    # Add cookie settings for additional security
-    "AUTH_COOKIE": "access_token",
-    "AUTH_COOKIE_REFRESH": "refresh_token",
-    "AUTH_COOKIE_HTTP_ONLY": True,
-    "AUTH_COOKIE_SECURE": not DEBUG,  # Use secure cookies in production
-    "AUTH_COOKIE_SAMESITE": "Strict",
 }
 
 # Global datetime format
