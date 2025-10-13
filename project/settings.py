@@ -235,10 +235,6 @@ JAZZMIN_SETTINGS = {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
-        # Users
-        "users": "fas fa-user",
-        "users.profile": "fa-solid fa-id-badge",
-        "users.TempToken": "fa-solid fa-user-shield",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
@@ -296,7 +292,7 @@ JAZZMIN_UI_TWEAKS = {
     "sidebar_nav_compact_style": False,
     "sidebar_nav_legacy_style": False,
     "sidebar_nav_flat_style": False,
-    "theme": "united",
+    "theme": "litera",
     "dark_mode_theme": None,
     "button_classes": {
         "primary": "btn-outline-primary",
@@ -304,8 +300,8 @@ JAZZMIN_UI_TWEAKS = {
         "info": "btn-info",
         "warning": "btn-warning",
         "danger": "btn-danger",
-        "success": "btn-success",
-    },
+        "success": "btn-success"
+    }
 }
 
 # Cors & CSRF
