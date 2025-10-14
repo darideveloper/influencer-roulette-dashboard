@@ -7,7 +7,8 @@ class RouletteAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "subtitle",
-        "current_spins",
+        "spins_space_hours",
+        "spins_ads_limit",
         "created_at",
         "updated_at",
     )
@@ -58,16 +59,14 @@ class ParticipantSpinAdmin(admin.ModelAdmin):
     list_display = (
         "participant",
         "roulette",
-        "last_spin",
-        "last_extra_spin",
+        "is_extra_spin",
         "created_at",
         "updated_at",
     )
     list_filter = (
         "participant",
         "roulette",
-        "last_spin",
-        "last_extra_spin",
+        "is_extra_spin",
         "created_at",
         "updated_at",
     )

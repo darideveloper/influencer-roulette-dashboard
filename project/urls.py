@@ -10,6 +10,11 @@ from roulette import views as roulette_views
 # Setup drf router
 router = routers.DefaultRouter()
 router.register(r"roulette", roulette_views.RouletteViewSet, basename="roulette")
+router.register(
+    r"participant",
+    roulette_views.ParticipantViewSet,
+    basename="participant",
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

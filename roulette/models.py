@@ -3,7 +3,7 @@ from django.utils.text import slugify
 
 
 class Roulette(models.Model):
-    # Main data
+    # Texts
     id = models.AutoField(primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=255, verbose_name="Nombre")
     slug = models.SlugField(
@@ -12,24 +12,35 @@ class Roulette(models.Model):
         verbose_name="Slug",
         help_text="url autogenerada para la ruleta.",
     )
-    logo = models.ImageField(upload_to="roulette/logos/", verbose_name="Logo")
     subtitle = models.CharField(
         max_length=255, default="", blank=True, verbose_name="Subtítulo"
     )
     bottom_text = models.TextField(
         default="", blank=True, verbose_name="Texto inferior"
     )
+
+    # Settings
+    spins_space_hours = models.IntegerField(
+        default=0,
+        verbose_name="Espacio entre giros (horas)",
+        help_text="e.g. 2 (girar una vez cada 2 horas)",
+    )
+    spins_ads_limit = models.IntegerField(
+        default=0,
+        verbose_name="Límite de giros (ads)",
+        help_text="e.g. 2 (girar 2 veces extra, en base al Espacio entre giros)",
+    )
+    
+    # Images
+    logo = models.ImageField(upload_to="roulette/logos/", verbose_name="Logo")
     bg_image = models.ImageField(
         upload_to="roulette/backgrounds/", verbose_name="Imagen de fondo"
-    )
-    current_spins = models.IntegerField(
-        default=0,
-        verbose_name="Total de giros",
-        help_text="Total de giros realizados en la ruleta. No editar manualmente.",
     )
     wrong_icon = models.ImageField(
         upload_to="roulette/icons/", verbose_name="Icono de error (sin premio)"
     )
+
+    # Messages
     message_no_spins = models.CharField(
         max_length=255, verbose_name="Mensaje de error (sin mas giros)"
     )
@@ -143,9 +154,8 @@ class ParticipantSpin(models.Model):
     roulette = models.ForeignKey(
         Roulette, on_delete=models.CASCADE, verbose_name="Ruleta"
     )
-    last_spin = models.DateTimeField(null=True, blank=True, verbose_name="Último giro")
-    last_extra_spin = models.DateTimeField(
-        null=True, blank=True, verbose_name="Último giro extra"
+    is_extra_spin = models.BooleanField(
+        default=False, verbose_name="Es giro extra (ads)"
     )
 
     # dates
