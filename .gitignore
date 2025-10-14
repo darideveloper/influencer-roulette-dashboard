@@ -13,3 +13,5 @@ temp.*
 
 /temp_files
 /venv
+
+testing.sqlite3

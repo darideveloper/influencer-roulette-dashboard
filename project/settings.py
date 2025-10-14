@@ -104,7 +104,6 @@ WSGI_APPLICATION = "project.wsgi.application"
 # Database
 # Setup database for testing and production
 IS_TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
-
 if IS_TESTING:
     DATABASES = {
         "default": {
@@ -237,9 +236,10 @@ JAZZMIN_SETTINGS = {
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
         # Roulette
-        "roulette.Test": "fas fa-dice",
-        "roulette.TestOther": "fas fa-dice",
-        "roulette.Client": "fas fa-users",
+        "roulette.Roulette": "fas fa-dice",
+        "roulette.Award": "fas fa-award",
+        "roulette.ParticipantAward": "fas fa-medal",
+        "roulette.Participant": "fas fa-users",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
