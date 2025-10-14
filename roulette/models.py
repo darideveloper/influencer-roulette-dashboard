@@ -113,28 +113,10 @@ class Award(models.Model):
 
 class Participant(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    roulette = models.ForeignKey(
-        Roulette,
-        on_delete=models.CASCADE,
-        related_name="participants",
-        verbose_name="Ruleta",
-    )
     name = models.CharField(max_length=255, verbose_name="Nombre")
     email = models.EmailField(
         unique=True,
         verbose_name="Email",
-    )
-    last_spin = models.DateTimeField(null=True, blank=True, verbose_name="Último giro")
-    last_extra_spin = models.DateTimeField(
-        null=True, blank=True, verbose_name="Último giro extra"
-    )
-
-    # Many-to-Many relationship
-    awards = models.ManyToManyField(
-        Award,
-        through="ParticipantAward",
-        related_name="winners",
-        verbose_name="Premios",
     )
 
     # dates
@@ -151,6 +133,35 @@ class Participant(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.email})"
+
+
+class ParticipantSpin(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
+    participant = models.ForeignKey(
+        Participant, on_delete=models.CASCADE, verbose_name="Participante"
+    )
+    roulette = models.ForeignKey(
+        Roulette, on_delete=models.CASCADE, verbose_name="Ruleta"
+    )
+    last_spin = models.DateTimeField(null=True, blank=True, verbose_name="Último giro")
+    last_extra_spin = models.DateTimeField(
+        null=True, blank=True, verbose_name="Último giro extra"
+    )
+
+    # dates
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Fecha de creación"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, verbose_name="Fecha de actualización"
+    )
+
+    class Meta:
+        verbose_name = "Giro de Participante"
+        verbose_name_plural = "Giros de Participantes"
+
+    def __str__(self):
+        return f"{self.participant.name} ({self.last_spin})"
 
 
 class ParticipantAward(models.Model):
