@@ -33,10 +33,13 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
+DB_USE_SQLITE = os.getenv("DB_USE_SQLITE") == "True"
+
 
 print(f"DEBUG: {DEBUG}")
 print(f"AWS_STORAGE: {AWS_STORAGE}")
 print(f"HOST: {HOST}")
+print(f"DB_USE_SQLITE: {DB_USE_SQLITE}")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -104,17 +107,7 @@ WSGI_APPLICATION = "project.wsgi.application"
 # Database
 # Setup database for testing and production
 IS_TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
-IS_DEVELOPMENT = os.getenv("ENV") == "dev"
-if IS_TESTING:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.path.join(BASE_DIR, "testing.sqlite3"),
-        }
-    }
-
-elif IS_DEVELOPMENT:
-
+if IS_TESTING or DB_USE_SQLITE:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
