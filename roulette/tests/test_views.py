@@ -54,7 +54,7 @@ class TestRouletteViewsBase(BaseTestApiViewsMethods):
             content_type="image/webp",
         )
         self.roulette.save()
-        
+
     def __validate_award_data(self, award_json):
         """Validate award data
 
@@ -92,7 +92,12 @@ class TestRouletteViewsBase(BaseTestApiViewsMethods):
         self.assertEqual(response.data["subtitle"], self.roulette.subtitle)
         self.assertEqual(response.data["bottom_text"], self.roulette.bottom_text)
         self.assertIn(self.roulette.bg_image.url, response.data["bg_image"])
-        self.assertEqual(response.data["current_spins"], self.roulette.current_spins)
+        self.assertEqual(
+            response.data["spins_space_hours"], self.roulette.spins_space_hours
+        )
+        self.assertEqual(
+            response.data["spins_ads_limit"], self.roulette.spins_ads_limit
+        )
         self.assertIn(self.roulette.wrong_icon.url, response.data["wrong_icon"])
         self.assertEqual(
             response.data["message_no_spins"], self.roulette.message_no_spins
@@ -108,7 +113,7 @@ class TestRouletteViewsBase(BaseTestApiViewsMethods):
         self.assertEqual(len(response.data["awards"]), 3)
         for award in response.data["awards"]:
             self.__validate_award_data(award)
-            
+
     def test_get_only_active_awards(self):
         """Test get only active awards"""
 
@@ -116,25 +121,23 @@ class TestRouletteViewsBase(BaseTestApiViewsMethods):
         random_award = models.Award.objects.order_by("?").first()
         random_award.active = False
         random_award.save()
-        for award in models.Award.objects.all():
-            print(award.active)
 
         # Validate response
         response = self.client.get(f"{self.endpoint}{self.roulette.slug}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # Validate awards in response
         self.assertEqual(len(response.data["awards"]), 2)
         for award in response.data["awards"]:
             self.__validate_award_data(award)
-    
+
     def test_get_awards_no_sensitive_data(self):
         """Test get awards no sensitive data"""
 
         # Validate response
         response = self.client.get(f"{self.endpoint}{self.roulette.slug}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # Validate awards in response
         self.assertEqual(len(response.data["awards"]), 3)
         for award in response.data["awards"]:
