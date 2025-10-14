@@ -30,10 +30,10 @@ class Roulette(models.Model):
     wrong_icon = models.ImageField(
         upload_to="roulette/icons/", verbose_name="Icono de error (sin premio)"
     )
-    message_error_no_spin = models.CharField(
+    message_no_spins = models.CharField(
         max_length=255, verbose_name="Mensaje de error (sin mas giros)"
     )
-    message_lose_lose = models.CharField(
+    message_lose = models.CharField(
         max_length=255, verbose_name="Mensaje de error (perdió)"
     )
     message_win = models.CharField(

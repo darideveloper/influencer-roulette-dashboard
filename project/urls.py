@@ -5,8 +5,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
 
+from roulette import views as roulette_views
+
 # Setup drf router
 router = routers.DefaultRouter()
+router.register(r"roulette", roulette_views.RouletteViewSet, basename="roulette")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -17,7 +20,6 @@ urlpatterns = [
         RedirectView.as_view(url="/admin/"),
         name="login-redirect-admin",
     ),
-    
     # Crud endpoints
     path("api/", include(router.urls)),
 ]

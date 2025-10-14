@@ -16,8 +16,8 @@ class RouletteAdmin(admin.ModelAdmin):
         "name",
         "subtitle",
         "bottom_text",
-        "message_error_no_spin",
-        "message_lose_lose",
+        "message_no_spins",
+        "message_lose",
         "message_win",
     )
     readonly_fields = ("slug", "created_at", "updated_at")
