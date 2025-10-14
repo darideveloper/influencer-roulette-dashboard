@@ -241,8 +241,9 @@ JAZZMIN_SETTINGS = {
         # Roulette
         "roulette.Roulette": "fas fa-dice",
         "roulette.Award": "fas fa-award",
-        "roulette.ParticipantAward": "fas fa-medal",
+        "roulette.ParticipantAward": "fas fa-star",
         "roulette.Participant": "fas fa-users",
+        "roulette.ParticipantSpin": "fas fa-rotate",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
