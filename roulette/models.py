@@ -68,11 +68,11 @@ class Roulette(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     def save(self, *args, **kwargs):
         # Create slug based on name
         self.slug = slugify(self.name)
-        
+
         # Save the model
         super().save(*args, **kwargs)
 
@@ -136,12 +136,14 @@ class Participant(models.Model):
         related_name="winners",
         verbose_name="Premios",
     )
-    
+
     # dates
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name="Fecha de creación"
     )
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(
+        auto_now=True, verbose_name="Fecha de actualización"
+    )
 
     class Meta:
         verbose_name = "Participante"
@@ -157,7 +159,7 @@ class ParticipantAward(models.Model):
         Participant, on_delete=models.CASCADE, verbose_name="Participante"
     )
     award = models.ForeignKey(Award, on_delete=models.CASCADE, verbose_name="Premio")
-    
+
     # dates
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="Fecha y hora de cuando el premio fue ganado."
