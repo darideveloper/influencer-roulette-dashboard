@@ -3,6 +3,7 @@ from django.db import models
 
 class Roulette(models.Model):
     # Main data
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=255, verbose_name="Nombre")
     slug = models.SlugField(
         max_length=255,
@@ -69,6 +70,7 @@ class Roulette(models.Model):
 
 
 class Award(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     roulette = models.ForeignKey(
         Roulette, on_delete=models.CASCADE, related_name="awards", verbose_name="Ruleta"
     )
@@ -102,6 +104,7 @@ class Award(models.Model):
 
 
 class Participant(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     roulette = models.ForeignKey(
         Roulette,
         on_delete=models.CASCADE,
@@ -141,6 +144,7 @@ class Participant(models.Model):
 
 
 class ParticipantAward(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     participant = models.ForeignKey(
         Participant, on_delete=models.CASCADE, verbose_name="Participante"
     )
