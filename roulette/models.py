@@ -35,6 +35,10 @@ class Roulette(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = "Ruleta"
+        verbose_name_plural = "Rouletas"
+
     def __str__(self):
         return self.name
 
@@ -53,6 +57,10 @@ class Award(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Premio"
+        verbose_name_plural = "Premios"
 
     def __str__(self):
         return f"{self.name} ({self.roulette.name})"
@@ -76,6 +84,10 @@ class Participant(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Participante"
+        verbose_name_plural = "Participantes"
 
     def __str__(self):
         return f"{self.name} <{self.email}>"
@@ -90,8 +102,8 @@ class ParticipantAward(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Participant's Award"
-        verbose_name_plural = "Participant's Awards"
+        verbose_name = "Premio de Participante"
+        verbose_name_plural = "Premios de Participantes"
 
     def __str__(self):
         return f"{self.participant.name} won {self.award.name}"
