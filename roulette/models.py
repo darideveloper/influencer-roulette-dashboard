@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 
 class Roulette(models.Model):
@@ -67,6 +68,13 @@ class Roulette(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        # Create slug based on name
+        self.slug = slugify(self.name)
+        
+        # Save the model
+        super().save(*args, **kwargs)
 
 
 class Award(models.Model):
@@ -140,7 +148,7 @@ class Participant(models.Model):
         verbose_name_plural = "Participantes"
 
     def __str__(self):
-        return f"{self.name} <{self.email}>"
+        return f"{self.name} ({self.email})"
 
 
 class ParticipantAward(models.Model):
