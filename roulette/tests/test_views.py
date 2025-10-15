@@ -9,7 +9,7 @@ from core.tests_base.test_views import BaseTestApiViewsMethods
 from roulette import models
 
 
-class TestRouletteViewsBase(BaseTestApiViewsMethods):
+class TestRouletteViewsBaseTestCase(BaseTestApiViewsMethods):
     """Base class for testing roulette views"""
 
     def setUp(self):
@@ -143,3 +143,7 @@ class TestRouletteViewsBase(BaseTestApiViewsMethods):
         for award in response.data["awards"]:
             self.assertNotIn("min_spins", award)
             self.assertNotIn("active", award)
+
+
+class ParticipantViewSetTestCase(BaseTestApiViewsMethods):
+    pass
