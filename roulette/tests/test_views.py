@@ -206,6 +206,19 @@ class ParticipantViewValidateTestCase(BaseTestApiViewsMethods):
     def __wait_for_space_time(self):
         """Wait for space time"""
         sleep(self.roulette.spins_space_hours * 3600 + 1)
+        
+    def test_missing_data(self):
+        """Test missing data"""
+        response = self.client.post(self.endpoint, data={})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["message"], "Invalid data")
+        
+    def test_invalid_roulette(self):
+        """Test invalid roulette"""
+        self.api_data["roulette"] = "invalid-roulette"
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["message"], "Invalid data")
 
     def test_new_participant(self):
         """Test create new participant when validate"""
