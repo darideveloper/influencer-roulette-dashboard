@@ -27,7 +27,7 @@ class RouletteSerializer(serializers.ModelSerializer):
         return AwardSerializer(active_awards, many=True).data
 
 
-class ParticipantSpinSerializer(serializers.Serializer):
+class ParticipantValidateSerializer(serializers.Serializer):
     email = serializers.EmailField()
     name = serializers.CharField()
     roulette = serializers.SlugRelatedField(
@@ -35,6 +35,8 @@ class ParticipantSpinSerializer(serializers.Serializer):
     )
 
     def validate(self, data):
+        """Validate if participant can spin and return response data"""
+
         # Default response
         data["can_spin"] = True
         data["can_spin_ads"] = True
@@ -101,13 +103,93 @@ class ParticipantSpinSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
+        """Create participant or update name"""
+
         participant = validated_data.get("participant")
         if participant:
+            # Update participant name
             participant.name = validated_data["name"]
             participant.save()
         else:
+            # Create new participant
             participant = models.Participant.objects.create(
                 email=validated_data["email"], name=validated_data["name"]
             )
 
+        # Add participant to validated data
+        validated_data["participant"] = participant
+
+        # Return validated data
+        return validated_data
+
+
+class ParticipantSpinSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    name = serializers.CharField()
+    roulette = serializers.SlugRelatedField(
+        queryset=models.Roulette.objects.all(), slug_field="slug"
+    )
+    is_extra_spin = serializers.BooleanField()
+
+    def validate(self, data):
+
+        # Add data to validated_data
+        data["award"] = None
+        data["participant"] = None
+
+        # Validate participant
+        validate_serializer = ParticipantValidateSerializer(
+            data={
+                "email": data["email"],
+                "name": data["name"],
+                "roulette": data["roulette"].slug,
+            }
+        )
+        if not validate_serializer.is_valid():
+            raise serializers.ValidationError(validate_serializer.errors)
+        validated_data = validate_serializer.save()
+        data["participant"] = validated_data["participant"]
+
+        # Detect spins bypass validation
+        if data["is_extra_spin"] and not validated_data["can_spin_ads"]:
+            raise serializers.ValidationError("You can't extra spin")
+
+        if not data["is_extra_spin"] and not validated_data["can_spin"]:
+            raise serializers.ValidationError("You can't regular spin")
+
+        # Calculate if user win a award based in roulette data
+        roulette_total_spins = data["roulette"].spins_counter
+        roulette_awards = models.Award.objects.filter(
+            roulette=data["roulette"],
+            active=True,
+        )
+        for award in roulette_awards:
+            if roulette_total_spins >= award.min_spins:
+                data["award"] = award
+                break
+
+        return data
+
+    def create(self, validated_data):
+
+        # Register spin in database
+        models.ParticipantSpin.objects.create(
+            participant=validated_data["participant"],
+            roulette=validated_data["roulette"],
+            is_extra_spin=validated_data["is_extra_spin"],
+        )
+
+        award = validated_data.get("award")
+        if award:
+            # Register award if user win
+            models.ParticipantAward.objects.create(
+                participant=validated_data["participant"],
+                award=award,
+            )
+
+            # Reduce roulette spins counter
+            validated_data["roulette"].spins_counter -= award.min_spins
+            validated_data["roulette"].save()
+
+        # Return validated data
         return validated_data

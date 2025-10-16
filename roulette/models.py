@@ -182,6 +182,7 @@ class ParticipantSpin(models.Model):
     def save(self, *args, **kwargs):
         # Increase spins counter
         self.roulette.spins_counter += 1
+        self.roulette.save()
 
         # Save the model
         super().save(*args, **kwargs)
