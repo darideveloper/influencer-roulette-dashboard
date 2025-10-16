@@ -1,4 +1,5 @@
 import os
+from time import sleep
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -145,5 +146,204 @@ class TestRouletteViewsBaseTestCase(BaseTestApiViewsMethods):
             self.assertNotIn("active", award)
 
 
-class ParticipantViewSetTestCase(BaseTestApiViewsMethods):
-    pass
+class ParticipantViewValidateTestCase(BaseTestApiViewsMethods):
+
+    def setUp(self):
+        super().setUp(
+            "/api/participant/validate/", restricted_post=False
+        )
+
+        self.roulette = baker.make(
+            models.Roulette,
+            spins_space_hours=0.003,  # limit to aprox 10 seconds per spin
+            spins_ads_limit=2,  # limit to 2 ads spins
+        )
+        for _ in range(3):
+            award = baker.make(models.Award, roulette=self.roulette)
+            award.save()
+
+        # Api data
+        self.api_data = {
+            "email": "test@test.com",
+            "name": "Test Participant",
+            "roulette": self.roulette.slug,
+        }
+
+        # Create participant with dummy data
+        self.participant = baker.make(
+            models.Participant, email=self.api_data["email"], name=self.api_data["name"]
+        )
+
+    def __validate_response_data(self, response, can_spin=True, can_spin_ads=True):
+        """Validate response data
+
+        Args:
+            response (Response): Response object
+            can_spin (bool): Can spin
+            can_spin_ads (bool): Can spin ads
+        """
+
+        # Validate response status
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Validate response data
+        json_data = response.json()["data"]
+        self.assertEqual(json_data["can_spin"], can_spin)
+        self.assertEqual(json_data["can_spin_ads"], can_spin_ads)
+
+    def test_new_participant(self):
+        """Test create new participant when validate"""
+
+        # Delete participant
+        self.participant.delete()
+
+        # Validate no participant before api call
+        self.assertEqual(models.Participant.objects.count(), 0)
+
+        # Validate response
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=True, can_spin_ads=True)
+
+        # Validate participant created
+        self.assertEqual(models.Participant.objects.count(), 1)
+        participant = models.Participant.objects.first()
+
+        # Validate participant data
+        self.assertEqual(participant.email, self.api_data["email"])
+        self.assertEqual(participant.name, self.api_data["name"])
+
+    def test_update_participant_name(self):
+        """Test update participant name when validate (if exists)"""
+
+        # Update participant name
+        self.api_data["name"] = "Test Participant 2"
+
+        # Validate response
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=True, can_spin_ads=True)
+
+        # Validate participant updated
+        self.participant.refresh_from_db()
+        self.assertEqual(self.participant.name, self.api_data["name"])
+
+    def test_ads_spin(self):
+        """Test ads spin after regular spin
+
+        User already has a regular spin, so next ads spin is allowed
+        """
+
+        # Simullate first spin
+        models.ParticipantSpin.objects.create(
+            participant=self.participant,
+            roulette=self.roulette,
+            is_extra_spin=False,
+        )
+
+        # Check for next ads spin with api
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=False, can_spin_ads=True)
+
+        # Wait until space time
+        sleep(self.roulette.spins_space_hours * 3600 + 1)
+
+        # Check for next ads spin with api
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=True, can_spin_ads=True)
+
+        # Check again before space time
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=False, can_spin_ads=True)
+
+        # Wait until space time
+        sleep(self.roulette.spins_space_hours * 3600 + 1)
+
+        # Check again after space time
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=True, can_spin_ads=True)
+
+    def test_spin_limit(self):
+        """Test regular spin limit:
+
+        User already has a regular spin, so next spin is not allowed
+        After space time, next spin is allowed
+        """
+
+        # Simullate first spin
+        models.ParticipantSpin.objects.create(
+            participant=self.participant,
+            roulette=self.roulette,
+            is_extra_spin=False,
+        )
+
+        # Check for second spin with api
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=False, can_spin_ads=True)
+
+        # Wait until space time
+        sleep(self.roulette.spins_space_hours * 3600 + 1)
+
+        # Check for third spin with api
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=True, can_spin_ads=True)
+
+        # Simullate second spin
+        models.ParticipantSpin.objects.create(
+            participant=self.participant,
+            roulette=self.roulette,
+            is_extra_spin=False,
+        )
+
+        # Check again before space time
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=False, can_spin_ads=True)
+
+        # Wait until space time
+        sleep(self.roulette.spins_space_hours * 3600 + 1)
+
+        # Check again after space time
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=True, can_spin_ads=True)
+
+    def test_ads_spin_limit(self):
+        """Test ads spin limit
+
+        User already has a regular spin, so next ads spin is not allowed
+        After space time, next ads spin is allowed
+        """
+
+        # Simullate first spin
+        models.ParticipantSpin.objects.create(
+            participant=self.participant,
+            roulette=self.roulette,
+            is_extra_spin=False,
+        )
+
+        # Simullate X ads spins
+        for _ in range(self.roulette.spins_ads_limit):
+            models.ParticipantSpin.objects.create(
+                participant=self.participant,
+                roulette=self.roulette,
+                is_extra_spin=True,
+            )
+
+        # Check for next spin with api
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=False, can_spin_ads=False)
+
+        # Wait until space time
+        sleep(self.roulette.spins_space_hours * 3600 + 1)
+
+        # Check for next spin with api
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=True, can_spin_ads=True)
+
+        # Check again before space time
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=False, can_spin_ads=False)
+
+        # Wait until space time
+        sleep(self.roulette.spins_space_hours * 3600 + 1)
+
+        # Check again after space time
+        response = self.client.post(self.endpoint, data=self.api_data)
+        self.__validate_response_data(response, can_spin=True, can_spin_ads=True)

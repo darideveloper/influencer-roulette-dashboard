@@ -20,7 +20,7 @@ class Roulette(models.Model):
     )
 
     # Settings
-    spins_space_hours = models.IntegerField(
+    spins_space_hours = models.FloatField(
         default=0,
         verbose_name="Espacio entre giros (horas)",
         help_text="e.g. 2 (girar una vez cada 2 horas)",

@@ -30,8 +30,8 @@ class RouletteSerializer(serializers.ModelSerializer):
 class ParticipantSpinSerializer(serializers.Serializer):
     email = serializers.EmailField()
     name = serializers.CharField()
-    roulette = serializers.PrimaryKeyRelatedField(
-        queryset=models.Roulette.objects.all()
+    roulette = serializers.SlugRelatedField(
+        queryset=models.Roulette.objects.all(), slug_field="slug"
     )
 
     def validate(self, data):
@@ -48,29 +48,55 @@ class ParticipantSpinSerializer(serializers.Serializer):
                 participant=participant, roulette=data["roulette"]
             ).order_by("-created_at")
 
-            # Regular spin limit
-            last_regular_spin = participant_spins.filter(is_extra_spin=False).first()
+            # Allow to spin if not have any spin
+            if not participant_spins.exists():
+                return data
+
             roulette = data["roulette"]
-            if (
-                last_regular_spin.created_at
-                + timedelta(hours=roulette.spins_space_hours)
-                > timezone.now()
-            ):
-                data["can_spin"] = False
+
+            # Regular spin limit
+            last_regular_spin = participant_spins.filter(is_extra_spin=False).order_by(
+                "-created_at"
+            )
+
+            if last_regular_spin.exists():
+                last_regular_spin = last_regular_spin.first()
+
+                # Calculate time to spin regular
+                time_to_spin_regular = last_regular_spin.created_at + timedelta(
+                    hours=roulette.spins_space_hours
+                )
+
+                if time_to_spin_regular > timezone.now():
+                    data["can_spin"] = False
 
             # Extra spin limit
-            num_extra_spins = participant_spins.filter(is_extra_spin=True).count()
-            last_extra_spin = participant_spins.filter(is_extra_spin=True).first()
-            
-            if (num_extra_spins >= roulette.spins_ads_limit):
-                data["can_spin_ads"] = False
-                
-            if (
-                last_extra_spin.created_at
-                + timedelta(hours=roulette.spins_space_hours)
-                > timezone.now()
-            ):
-                data["can_spin_ads"] = False
+            last_extra_spin = participant_spins.filter(is_extra_spin=True).order_by(
+                "-created_at"
+            )
+
+            if last_extra_spin.exists():
+                last_extra_spin = last_extra_spin.first()
+
+                # Calculate time to spin extra
+                time_to_spin_extra = last_extra_spin.created_at + timedelta(
+                    hours=roulette.spins_space_hours
+                )
+
+                # Calculate number of extra spins in current space time
+                space_time_start = timezone.now() - timedelta(
+                    hours=roulette.spins_space_hours
+                )
+                num_extra_spins_in_space_time = participant_spins.filter(
+                    is_extra_spin=True,
+                    created_at__gte=space_time_start,
+                ).count()
+
+                if (
+                    time_to_spin_extra > timezone.now()
+                    or num_extra_spins_in_space_time >= roulette.spins_ads_limit
+                ):
+                    data["can_spin_ads"] = False
 
         return data
 
