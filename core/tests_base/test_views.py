@@ -1,14 +1,28 @@
+import json
+
 from django.contrib.auth.models import User
-
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
-
 
 from core.tests_base.test_admin import TestAdminBase
 
 
+class RenderingAPIClient(APIClient):
+    """API Client that renders responses to match production behavior"""
+
+    def request(self, **kwargs):
+        response = super().request(**kwargs)
+        if hasattr(response, "render"):
+            response.render()
+            if response.content:
+                response.data = json.loads(response.content)
+        return response
+
+
 class BaseTestApiViewsMethods(APITestCase, TestAdminBase):
     """Base class for testing api views that only allows get views"""
+
+    client_class = RenderingAPIClient  # All subclasses inherit this
 
     def setUp(
         self,
@@ -47,7 +61,7 @@ class BaseTestApiViewsMethods(APITestCase, TestAdminBase):
 
     def validate_invalid_method(self, method: str):
         """Validate that the given method is not allowed on the endpoint"""
-        
+
         if self.endpoint == "/api/":
             return
 

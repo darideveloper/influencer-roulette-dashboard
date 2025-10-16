@@ -75,8 +75,9 @@ class TestRouletteViewsBaseTestCase(BaseTestApiViewsMethods):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Validate results number
-        self.assertEqual(response.data["count"], 1)
-        self.assertEqual(response.data["results"][0]["id"], self.roulette.id)
+        json_data = response.json()["data"]
+        self.assertEqual(json_data["count"], 1)
+        self.assertEqual(json_data["results"][0]["id"], self.roulette.id)
 
     def test_get_roulette_detail(self):
         """Test get roulette detail"""
@@ -86,33 +87,28 @@ class TestRouletteViewsBaseTestCase(BaseTestApiViewsMethods):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Validate roulette data
-        self.assertEqual(response.data["id"], self.roulette.id)
-        self.assertEqual(response.data["name"], self.roulette.name)
-        self.assertEqual(response.data["slug"], self.roulette.slug)
-        self.assertIn(self.roulette.logo.url, response.data["logo"])
-        self.assertEqual(response.data["subtitle"], self.roulette.subtitle)
-        self.assertEqual(response.data["bottom_text"], self.roulette.bottom_text)
-        self.assertIn(self.roulette.bg_image.url, response.data["bg_image"])
-        self.assertEqual(
-            response.data["spins_space_hours"], self.roulette.spins_space_hours
-        )
-        self.assertEqual(
-            response.data["spins_ads_limit"], self.roulette.spins_ads_limit
-        )
-        self.assertIn(self.roulette.wrong_icon.url, response.data["wrong_icon"])
-        self.assertEqual(
-            response.data["message_no_spins"], self.roulette.message_no_spins
-        )
-        self.assertEqual(response.data["message_lose"], self.roulette.message_lose)
-        self.assertEqual(response.data["message_win"], self.roulette.message_win)
-        self.assertEqual(response.data["color_spin_1"], self.roulette.color_spin_1)
-        self.assertEqual(response.data["color_spin_2"], self.roulette.color_spin_2)
-        self.assertEqual(response.data["color_spin_3"], self.roulette.color_spin_3)
-        self.assertEqual(response.data["color_spin_4"], self.roulette.color_spin_4)
+        json_data = response.json()["data"]
+        self.assertEqual(json_data["id"], self.roulette.id)
+        self.assertEqual(json_data["name"], self.roulette.name)
+        self.assertEqual(json_data["slug"], self.roulette.slug)
+        self.assertIn(self.roulette.logo.url, json_data["logo"])
+        self.assertEqual(json_data["subtitle"], self.roulette.subtitle)
+        self.assertEqual(json_data["bottom_text"], self.roulette.bottom_text)
+        self.assertIn(self.roulette.bg_image.url, json_data["bg_image"])
+        self.assertEqual(json_data["spins_space_hours"], self.roulette.spins_space_hours)
+        self.assertEqual(json_data["spins_ads_limit"], self.roulette.spins_ads_limit)
+        self.assertIn(self.roulette.wrong_icon.url, json_data["wrong_icon"])
+        self.assertEqual(json_data["message_no_spins"], self.roulette.message_no_spins)
+        self.assertEqual(json_data["message_lose"], self.roulette.message_lose)
+        self.assertEqual(json_data["message_win"], self.roulette.message_win)
+        self.assertEqual(json_data["color_spin_1"], self.roulette.color_spin_1)
+        self.assertEqual(json_data["color_spin_2"], self.roulette.color_spin_2)
+        self.assertEqual(json_data["color_spin_3"], self.roulette.color_spin_3)
+        self.assertEqual(json_data["color_spin_4"], self.roulette.color_spin_4)
 
         # Validate awards data
-        self.assertEqual(len(response.data["awards"]), 3)
-        for award in response.data["awards"]:
+        self.assertEqual(len(json_data["awards"]), 3)
+        for award in json_data["awards"]:
             self.__validate_award_data(award)
 
     def test_get_only_active_awards(self):
@@ -128,8 +124,9 @@ class TestRouletteViewsBaseTestCase(BaseTestApiViewsMethods):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Validate awards in response
-        self.assertEqual(len(response.data["awards"]), 2)
-        for award in response.data["awards"]:
+        json_data = response.json()["data"]
+        self.assertEqual(len(json_data["awards"]), 2)
+        for award in json_data["awards"]:
             self.__validate_award_data(award)
 
     def test_get_awards_no_sensitive_data(self):
@@ -140,8 +137,9 @@ class TestRouletteViewsBaseTestCase(BaseTestApiViewsMethods):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Validate awards in response
-        self.assertEqual(len(response.data["awards"]), 3)
-        for award in response.data["awards"]:
+        json_data = response.json()["data"]
+        self.assertEqual(len(json_data["awards"]), 3)
+        for award in json_data["awards"]:
             self.assertNotIn("min_spins", award)
             self.assertNotIn("active", award)
 
