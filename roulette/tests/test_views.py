@@ -398,7 +398,7 @@ class ParticipantSpinTestCase(ParticipantBaseTestCase):
 
             # Validate roulette spins counter reset to 1 (only new spin created)
             self.roulette.refresh_from_db()
-            self.assertEqual(self.roulette.spins_counter, 0)
+            self.assertEqual(self.roulette.spins_counter, 1)
 
             # Validate award not created
             self.assertEqual(models.ParticipantAward.objects.count(), 0)
