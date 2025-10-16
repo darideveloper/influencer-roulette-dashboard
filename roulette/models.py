@@ -30,7 +30,13 @@ class Roulette(models.Model):
         verbose_name="Límite de giros (ads)",
         help_text="e.g. 2 (girar 2 veces extra, en base al Espacio entre giros)",
     )
-    
+    spins_counter = models.IntegerField(
+        default=0,
+        verbose_name="Contador de giros",
+        help_text="Total de giros realizados en la ruleta desde último "
+        "premio ganado. No editar manualmente.",
+    )
+
     # Images
     logo = models.ImageField(upload_to="roulette/logos/", verbose_name="Logo")
     bg_image = models.ImageField(
@@ -172,6 +178,13 @@ class ParticipantSpin(models.Model):
 
     def __str__(self):
         return f"{self.participant.name} ({self.last_spin})"
+    
+    def save(self, *args, **kwargs):
+        # Increase spins counter
+        self.roulette.spins_counter += 1
+
+        # Save the model
+        super().save(*args, **kwargs)
 
 
 class ParticipantAward(models.Model):
