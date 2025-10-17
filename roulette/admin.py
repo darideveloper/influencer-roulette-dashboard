@@ -29,7 +29,7 @@ class AwardAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "roulette",
-        "description",
+        'min_spins',
         "active",
         "created_at",
         "updated_at",
