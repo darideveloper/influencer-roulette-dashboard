@@ -61,43 +61,27 @@ class ParticipantValidateSerializer(serializers.Serializer):
                 "-created_at"
             )
 
-            if last_regular_spin.exists():
-                last_regular_spin = last_regular_spin.first()
+            if not last_regular_spin.exists():
+                print("no last regular spin")
+                return data
+            
+            # Get last regular spin
+            last_regular_spin = last_regular_spin.first()
 
-                # Calculate time to spin regular
-                time_to_spin_regular = last_regular_spin.created_at + timedelta(
-                    hours=roulette.spins_space_hours
-                )
-
-                if time_to_spin_regular > timezone.now():
-                    data["can_spin"] = False
-
-            # Extra spin limit
-            last_extra_spin = participant_spins.filter(is_extra_spin=True).order_by(
-                "-created_at"
+            # Calculate time to spin regular and check if if user can spin
+            time_to_spin_next = last_regular_spin.created_at + timedelta(
+                hours=roulette.spins_space_hours
             )
-
-            if last_extra_spin.exists():
-                last_extra_spin = last_extra_spin.first()
-
-                # Calculate time to spin extra
-                time_to_spin_extra = last_extra_spin.created_at + timedelta(
-                    hours=roulette.spins_space_hours
-                )
-
-                # Calculate number of extra spins in current space time
-                space_time_start = timezone.now() - timedelta(
-                    hours=roulette.spins_space_hours
-                )
+            if time_to_spin_next > timezone.now():
+                data["can_spin"] = False
+                
+                # Calculate number of extra spins in space time
                 num_extra_spins_in_space_time = participant_spins.filter(
                     is_extra_spin=True,
-                    created_at__gte=space_time_start,
+                    created_at__gte=last_regular_spin.created_at,
                 ).count()
-
-                if (
-                    time_to_spin_extra > timezone.now()
-                    or num_extra_spins_in_space_time >= roulette.spins_ads_limit
-                ):
+                
+                if num_extra_spins_in_space_time >= roulette.spins_ads_limit:
                     data["can_spin_ads"] = False
 
         return data

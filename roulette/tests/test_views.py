@@ -95,7 +95,9 @@ class TestRouletteViewsBaseTestCase(BaseTestApiViewsMethods):
         self.assertEqual(json_data["subtitle"], self.roulette.subtitle)
         self.assertEqual(json_data["bottom_text"], self.roulette.bottom_text)
         self.assertIn(self.roulette.bg_image.url, json_data["bg_image"])
-        self.assertEqual(json_data["spins_space_hours"], self.roulette.spins_space_hours)
+        self.assertEqual(
+            json_data["spins_space_hours"], self.roulette.spins_space_hours
+        )
         self.assertEqual(json_data["spins_ads_limit"], self.roulette.spins_ads_limit)
         self.assertIn(self.roulette.wrong_icon.url, json_data["wrong_icon"])
         self.assertEqual(json_data["message_no_spins"], self.roulette.message_no_spins)
@@ -217,7 +219,7 @@ class ParticipantViewValidateTestCase(ParticipantBaseTestCase):
         super().setUp("/api/participant/validate/", restricted_post=False)
 
         self.load_dummy_data()
-        
+
         # Update api data
         self.api_data["is_extra_spin"] = False
 
@@ -323,7 +325,7 @@ class ParticipantViewValidateTestCase(ParticipantBaseTestCase):
         After space time, next ads spin is allowed
         """
 
-        # Simullate two regular spins
+        # Simullate two spins groups
         for _ in range(2):
 
             # Simullate first spin
@@ -401,20 +403,23 @@ class ParticipantSpinTestCase(ParticipantBaseTestCase):
             # Validate award not created
             self.assertEqual(models.ParticipantAward.objects.count(), 0)
 
-    def test_spin_bypass_no_spins(self):
+    def test_spin_bypass_no_more_spins(self):
         """Validate error response when user try to spin bypassing validation
-        - No regular spin created
-        - No spin created
-        - No award
+        and user has no more spins
+            - No regular spin created
+            - No spin created
+            - No award
         """
+
+        # Create 12 regular spin an any requires extra spins
+        self.create_spin(is_extra_spin=False)
+        for _ in range(self.roulette.spins_ads_limit):
+            self.create_spin(is_extra_spin=True)
+        initial_spins_counter = self.roulette.spins_counter
 
         for is_extra_spin in [True, False]:
 
-            # Delete old spins
-            models.ParticipantSpin.objects.all().delete()
-
             # Create 1 regular spin and update api data
-            self.create_spin(is_extra_spin=is_extra_spin)
             self.api_data["is_extra_spin"] = is_extra_spin
 
             # Create spin with api call
@@ -431,7 +436,9 @@ class ParticipantSpinTestCase(ParticipantBaseTestCase):
             )
 
             # Validate no spin created (only test spin created)
-            self.assertEqual(models.ParticipantSpin.objects.count(), 1)
+            self.assertEqual(
+                models.ParticipantSpin.objects.count(), initial_spins_counter
+            )
 
     def test_spins_without_award(self):
         """Validate success response when user spin without award:
@@ -528,22 +535,22 @@ class ParticipantSpinTestCase(ParticipantBaseTestCase):
 
             # Validate response data
             json_data = response.json()["data"]
-            
+
             # wait for space time
             self.wait_for_space_time()
-            
+
         # Validate award in last spin
         self.assertEqual(json_data["award"]["id"], award.id)
-        
+
         # Validate 4 spins created
         self.assertEqual(models.ParticipantSpin.objects.count(), 4)
-        
+
         # Validate 1 award created
         self.assertEqual(models.ParticipantAward.objects.count(), 1)
         awardParticipant = models.ParticipantAward.objects.first()
         self.assertEqual(awardParticipant.participant, self.participant)
         self.assertEqual(awardParticipant.award, award)
-        
+
         # Validate roulette spins counter reset to 1 (only new spin created)
         self.roulette.refresh_from_db()
         self.assertEqual(self.roulette.spins_counter, 1)
