@@ -177,7 +177,7 @@ class ParticipantSpin(models.Model):
         verbose_name_plural = "Giros de Participantes"
 
     def __str__(self):
-        return f"{self.participant.name} ({self.last_spin})"
+        return f"{self.participant.name} ({self.created_at})"
     
     def save(self, *args, **kwargs):
         # Increase spins counter
