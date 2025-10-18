@@ -3,7 +3,7 @@ from django.utils.text import slugify
 
 
 class Roulette(models.Model):
-    # Texts
+    # general
     id = models.AutoField(primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=255, verbose_name="Nombre")
     slug = models.SlugField(
@@ -35,6 +35,9 @@ class Roulette(models.Model):
         verbose_name="Contador de giros",
         help_text="Total de giros realizados en la ruleta desde último "
         "premio ganado. No editar manualmente.",
+    )
+    google_ads_code = models.TextField(
+        default="", blank=True, verbose_name="Código compelto de Google Ads"
     )
 
     # Images

@@ -107,6 +107,7 @@ class TestRouletteViewsBaseTestCase(BaseTestApiViewsMethods):
         self.assertEqual(json_data["color_spin_2"], self.roulette.color_spin_2)
         self.assertEqual(json_data["color_spin_3"], self.roulette.color_spin_3)
         self.assertEqual(json_data["color_spin_4"], self.roulette.color_spin_4)
+        self.assertEqual(json_data["google_ads_code"], self.roulette.google_ads_code)
 
         # Validate awards data
         self.assertEqual(len(json_data["awards"]), 3)
